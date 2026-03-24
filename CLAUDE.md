@@ -82,20 +82,27 @@ AI 회의실 앱. 사용자가 자신의 AI API 키를 등록하고 AI 페르소
   - AI/키 관련 → 로컬 백엔드 (상대경로)
 - [x] `frontend/.env.electron` - Electron 빌드 전용 환경변수 파일
 - [x] Electron 빌드 시 `.env.electron` 자동 적용 (`build:frontend` 스크립트)
+- [x] 페르소나 저장 → Supabase DB에서 localStorage로 변경
 - [ ] 아이콘 파일 준비 (`icon.ico`, `icon.icns`)
-- [ ] 자동 업데이트 서버 설정 (GitHub Releases 또는 자체 서버)
+- [ ] 자동 업데이트 서버 설정 (GitHub Releases)
+- [ ] NicePay 결제 실제 테스트
 - [ ] 코드 서명 인증서 적용
 
 #### 3단계 - 배포
 - [x] `cd electron && npm run build:win` → `electron/dist/AEGIS Setup 1.0.0.exe` (84MB) 생성 완료
+- [x] 앱 실행 확인 (ELECTRON_RUN_AS_NODE=1 로 백엔드 정상 기동)
+- [x] 웹앱 종료 — 서버에서 프론트엔드 제거, 백엔드 API만 유지
+- [x] GitHub 레포 생성 및 초기 커밋 (github.com/khai2821195/Aegis, private)
 - [ ] Mac 패키지 (`.dmg`) - 필요시
 - [ ] GitHub Releases에 배포 (자동 업데이트 연동)
+- [ ] NicePay 결제 실제 테스트
 
 #### 빌드 관련 메모
 - electron-builder v25 → v24.13.3 다운그레이드 (winCodeSign 심볼릭링크 오류 회피)
 - Windows에서 winCodeSign 캐시 오류 우회법: 부분 추출된 폴더를 `winCodeSign-2.6.0`으로 복사
   - 캐시 위치: `%LOCALAPPDATA%\electron-builder\Cache\winCodeSign\winCodeSign-2.6.0\`
   - 다른 PC에서 빌드 시 동일 오류 발생하면 위 방법 또는 Windows 개발자 모드 활성화 필요
+- 백엔드 실행 시 반드시 `ELECTRON_RUN_AS_NODE=1` 환경변수 필요 (main.js에 설정됨)
 
 ### 보안 정책
 - 앱 시작 시 서버에서 라이선스 검증
