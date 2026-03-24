@@ -1,0 +1,75 @@
+{
+  "name": "aegis-desktop",
+  "version": "1.0.0",
+  "description": "AEGIS - AI 임원진 회의실 데스크탑 앱",
+  "main": "main.js",
+  "type": "module",
+  "scripts": {
+    "dev": "cross-env NODE_ENV=development electron .",
+    "build": "node scripts/build.mjs",
+    "build:win": "node scripts/build.mjs --win",
+    "build:mac": "node scripts/build.mjs --mac"
+  },
+  "dependencies": {
+    "electron-updater": "^6.3.9"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "electron": "^34.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.aegis.aimeetingroom",
+    "productName": "AEGIS",
+    "copyright": "Copyright © 2025 Aegis",
+    "asar": true,
+    "files": [
+      "main.js",
+      "preload.js",
+      "scripts/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "../backend",
+        "to": "backend",
+        "filter": [
+          "**/*",
+          "!node_modules/.cache/**",
+          "!node_modules/.bin/**"
+        ]
+      },
+      {
+        "from": "../frontend/dist",
+        "to": "frontend/dist"
+      },
+      {
+        "from": "backend.env",
+        "to": "backend/.env"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "mac": {
+      "target": "dmg",
+      "category": "public.app-category.productivity"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "AEGIS"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "YOUR_GITHUB_USERNAME",
+      "repo": "aegis-desktop"
+    }
+  }
+}
