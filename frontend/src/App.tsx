@@ -321,7 +321,7 @@ export default function App() {
   const permissions = TIER_CONFIG[tier];
   const { hasUpdate, latestInfo, dismiss, applyUpdate } = useUpdateCheck();
 
-  const [showAuth, setShowAuth] = useState(false);
+  const [showAuth, setShowAuth] = useState(true);
   const [started, setStarted] = useState(false);
   const [showEndModal, setShowEndModal] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);

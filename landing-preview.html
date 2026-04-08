@@ -4,21 +4,182 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AEGIS - Data-Driven Decision Engine</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.min.css" />
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.iconify.design/iconify-icon/2.3.0/iconify-icon.min.js"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        gray: { 800: '#1f2937', 900: '#111827', 950: '#030712' }
-                    }
+                        gray:  { 800: '#1f2937', 900: '#111827', 950: '#030712' },
+                        gold:  { DEFAULT: '#c8a96e', light: '#e0c98a' },
+                        electric: { DEFAULT: '#4f8fff' },
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 4s ease-in-out infinite',
+                        'float':      'float 6s ease-in-out infinite',
+                        'shimmer':    'shimmer 2.5s linear infinite',
+                    },
+                    keyframes: {
+                        float:   { '0%,100%': { transform: 'translateY(0px)' }, '50%': { transform: 'translateY(-12px)' } },
+                        shimmer: { '0%': { backgroundPosition: '-200% 0' }, '100%': { backgroundPosition: '200% 0' } },
+                    },
                 }
             }
         }
     </script>
+    <!-- API 가이드 모달 추가됨 -->
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+        body { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; word-break: keep-all; }
         .glass-panel { background: rgba(31, 41, 55, 0.5); backdrop-filter: blur(8px); border: 1px solid rgba(75, 85, 99, 0.5); }
+
+        /* ── Bezel Card ── */
+        .bezel-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%);
+            border: 1px solid rgba(255,255,255,0.09);
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.35s cubic-bezier(.22,.68,0,1.2), box-shadow 0.35s ease, border-color 0.3s;
+        }
+        .bezel-card::before {
+            content: '';
+            position: absolute; inset: 0;
+            border-radius: 20px; padding: 1px;
+            background: linear-gradient(135deg, rgba(200,169,110,0.35) 0%, rgba(79,143,255,0.15) 50%, transparent 100%);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor; mask-composite: exclude;
+            pointer-events: none;
+        }
+        .bezel-card::after {
+            content: '';
+            position: absolute; inset: 2px; border-radius: 18px;
+            border: 1px solid rgba(255,255,255,0.04);
+            pointer-events: none;
+        }
+
+        /* ── Gradient Text ── */
+        .text-gold-gradient {
+            background: linear-gradient(135deg, #c8a96e 0%, #e0c98a 50%, #a0824a 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .text-electric-gradient {
+            background: linear-gradient(135deg, #4f8fff 0%, #a78bfa 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+
+        /* ── Buttons ── */
+        .btn-primary {
+            position: relative; overflow: hidden;
+            background: linear-gradient(135deg, #c8a96e, #e0c98a, #a0824a);
+            color: #030712; font-weight: 700; border-radius: 12px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn-primary::after {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
+            background-size: 200% 100%;
+            animation: shimmer 2.5s linear infinite;
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(200,169,110,0.4); }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #e8eaf6; border-radius: 12px;
+            transition: all 0.2s;
+        }
+        .btn-secondary:hover {
+            background: rgba(79,143,255,0.1);
+            border-color: rgba(79,143,255,0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn-guide {
+            background: rgba(200,169,110,0.1);
+            border: 1px solid rgba(200,169,110,0.35);
+            color: #c8a96e; border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-guide:hover {
+            background: rgba(200,169,110,0.18);
+            border-color: rgba(200,169,110,0.6);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(200,169,110,0.2);
+        }
+
+        /* ── Hero Orb ── */
+        .hero-orb {
+            position: absolute; border-radius: 50%;
+            filter: blur(80px); pointer-events: none;
+        }
+
+        /* ── API 가이드 모달 ── */
+        .guide-overlay {
+            position: fixed; inset: 0;
+            background: rgba(3,7,18,0.88);
+            backdrop-filter: blur(16px);
+            z-index: 1000;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.3s ease;
+            padding: 20px;
+        }
+        .guide-overlay.open { opacity: 1; pointer-events: all; }
+        .guide-box {
+            background: linear-gradient(160deg, #111827 0%, #0a0f1e 100%);
+            border: 1px solid rgba(200,169,110,0.2);
+            border-radius: 28px;
+            width: min(680px, 96vw);
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: scale(0.93) translateY(24px);
+            transition: transform 0.4s cubic-bezier(.22,.68,0,1.2);
+            scrollbar-width: thin;
+            scrollbar-color: rgba(200,169,110,0.3) transparent;
+        }
+        .guide-box::-webkit-scrollbar { width: 5px; }
+        .guide-box::-webkit-scrollbar-thumb { background: rgba(200,169,110,0.3); border-radius: 3px; }
+        .guide-overlay.open .guide-box { transform: scale(1) translateY(0); }
+        .api-tab {
+            padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600;
+            transition: all 0.2s; cursor: pointer; border: none; background: transparent;
+            color: rgba(255,255,255,0.4);
+        }
+        .api-tab.active { background: linear-gradient(135deg, #c8a96e, #e0c98a); color: #030712; }
+        .api-tab:not(.active):hover { color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.05); }
+        .step-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 16px; padding: 20px;
+            transition: border-color 0.2s;
+        }
+        .step-card:hover { border-color: rgba(200,169,110,0.2); }
+        .step-num {
+            width: 32px; height: 32px; border-radius: 50%;
+            background: linear-gradient(135deg, #c8a96e, #e0c98a);
+            color: #030712; font-weight: 800; font-size: 14px;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .code-block {
+            background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px; padding: 12px 16px;
+            font-family: 'Courier New', monospace; font-size: 13px;
+            color: #e0c98a; word-break: break-all;
+        }
+        .tip-box { background: rgba(79,143,255,0.08); border: 1px solid rgba(79,143,255,0.2); border-radius: 12px; padding: 14px 16px; }
+        .warning-box { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.25); border-radius: 12px; padding: 14px 16px; }
+
+        /* ── Scroll Reveal ── */
+        .reveal { opacity: 0; transform: translateY(36px); transition: opacity 0.7s ease, transform 0.7s cubic-bezier(.22,.68,0,1.2); }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+        .reveal-delay-1 { transition-delay: 0.1s; }
+        .reveal-delay-2 { transition-delay: 0.2s; }
+        .reveal-delay-3 { transition-delay: 0.3s; }
+        .reveal-delay-4 { transition-delay: 0.4s; }
     </style>
 </head>
 <body class="min-h-screen bg-gray-950 text-white overflow-x-hidden selection:bg-indigo-500/30">
@@ -40,31 +201,133 @@
                     AEGIS
                 </span>
             </div>
-            <button class="px-5 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors" onclick="window.location.href='https://aegis.dctcompany.kr'">
-                로그인
-            </button>
+            <div class="flex items-center gap-3">
+                <button onclick="openGuide()" class="btn-guide px-4 py-2.5 text-sm flex items-center gap-2 cursor-pointer">
+                    <iconify-icon icon="solar:book-2-bold" style="font-size:16px"></iconify-icon>
+                    <span class="hidden sm:inline">시작 가이드</span>
+                </button>
+                <a href="https://dctcompany.kr/downloads/AEGIS-Setup-1.0.0.exe"
+                   class="btn-primary px-5 py-2.5 text-sm font-bold flex items-center gap-2 relative z-10">
+                    <iconify-icon icon="solar:download-bold" style="font-size:16px"></iconify-icon>
+                    Windows 다운로드
+                </a>
+            </div>
         </nav>
 
         <!-- Hero Section -->
-        <section class="pt-32 pb-20 px-6 lg:px-12 max-w-7xl mx-auto flex flex-col items-center text-center">
-            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-semibold tracking-wide mb-8">
-                <span class="w-2 h-2 rounded-full bg-indigo-400 animate-pulse"></span>
-                DATA-DRIVEN DECISION ENGINE
-            </div>
-            <h1 class="text-5xl lg:text-7xl font-extrabold tracking-tight mb-6 leading-tight">
-                리더의 직관을 <br class="hidden md:block"/>
-                <span class="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">데이터로 증명하다</span>
-            </h1>
-            <p class="text-lg lg:text-xl text-gray-400 max-w-2xl mb-12 leading-relaxed">
-                Aegis는 단순한 업무 효율화 도구가 아닙니다. 당신의 비즈니스 리스크를 낮추고 의사결정의 질과 속도를 극대화하는 <strong class="text-gray-200">단 하나의 지적 인프라</strong>입니다.
-            </p>
-            <div class="flex flex-col sm:flex-row gap-4">
-                <button class="px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-semibold shadow-xl shadow-indigo-600/20 flex items-center justify-center gap-2 transition-transform hover:-translate-y-1" onclick="window.location.href='https://aegis.dctcompany.kr'">
-                    내 경영 리스크 진단하기
-                </button>
-                <a href="#insight" class="px-8 py-4 bg-gray-800 hover:bg-gray-700 text-white rounded-2xl font-semibold border border-gray-700 transition-transform hover:-translate-y-1 text-center">
-                    인사이트 뷰
-                </a>
+        <section class="relative flex items-center pt-24 pb-16 overflow-hidden">
+            <div class="hero-orb w-[600px] h-[600px] top-[-200px] left-[-150px] opacity-20"
+                 style="background:radial-gradient(circle,#4f8fff 0%,transparent 70%)"></div>
+            <div class="hero-orb w-[500px] h-[500px] top-[-100px] right-[-100px] opacity-15"
+                 style="background:radial-gradient(circle,#c8a96e 0%,transparent 70%)"></div>
+            <div class="hero-orb w-[400px] h-[400px] bottom-0 left-[40%] opacity-10"
+                 style="background:radial-gradient(circle,#a78bfa 0%,transparent 70%)"></div>
+
+            <div class="max-w-7xl mx-auto px-6 relative z-10 w-full">
+                <div class="grid lg:grid-cols-2 gap-10 items-center">
+                    <div>
+                        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8 reveal"
+                             style="background:rgba(79,143,255,0.1);border:1px solid rgba(79,143,255,0.25)">
+                            <span class="w-2 h-2 rounded-full bg-electric animate-pulse-slow"></span>
+                            <span class="text-electric text-sm font-semibold">AI 기반 C레벨 의사결정 플랫폼</span>
+                        </div>
+                        <h1 class="text-5xl lg:text-6xl xl:text-7xl font-black leading-[1.08] tracking-tight mb-6 reveal reveal-delay-1">
+                            임원진의<br /><span class="text-gold-gradient">회의를</span><br />AI가 이끈다
+                        </h1>
+                        <p class="text-lg text-slate-400 leading-relaxed mb-10 max-w-lg reveal reveal-delay-2">
+                            CEO, CFO, COO, CTO가 한 공간에서 AI와 함께 전략을 수립하고,
+                            실시간 인사이트로 더 빠르고 정확한 결정을 내립니다.
+                        </p>
+                        <div class="flex flex-wrap gap-4 mb-12 reveal reveal-delay-3">
+                            <a href="https://dctcompany.kr/downloads/AEGIS-Setup-1.0.0.exe"
+                                class="btn-primary px-8 py-4 text-base font-bold cursor-pointer flex items-center gap-2.5 relative z-10">
+                                <iconify-icon icon="solar:download-bold" style="font-size:20px"></iconify-icon>
+                                지금 무료로 시작하기
+                            </a>
+                            <button onclick="openGuide()"
+                                class="btn-guide px-8 py-4 text-base cursor-pointer flex items-center gap-2.5">
+                                <iconify-icon icon="solar:book-2-bold" style="font-size:20px"></iconify-icon>
+                                API 설정 방법
+                            </button>
+                        </div>
+                        <div class="flex items-center gap-4 reveal reveal-delay-4">
+                            <div class="flex -space-x-2">
+                                <div class="w-9 h-9 rounded-full border-2 border-gray-950 flex items-center justify-center text-xs font-bold" style="background:linear-gradient(135deg,#4f8fff,#a78bfa)">김</div>
+                                <div class="w-9 h-9 rounded-full border-2 border-gray-950 flex items-center justify-center text-xs font-bold" style="background:linear-gradient(135deg,#c8a96e,#e0c98a)">이</div>
+                                <div class="w-9 h-9 rounded-full border-2 border-gray-950 flex items-center justify-center text-xs font-bold" style="background:linear-gradient(135deg,#a78bfa,#4f8fff)">박</div>
+                                <div class="w-9 h-9 rounded-full border-2 border-gray-950 flex items-center justify-center text-xs font-bold" style="background:linear-gradient(135deg,#10b981,#4f8fff)">최</div>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-1 mb-0.5">
+                                    <iconify-icon icon="solar:star-bold" style="font-size:14px;color:#c8a96e"></iconify-icon>
+                                    <iconify-icon icon="solar:star-bold" style="font-size:14px;color:#c8a96e"></iconify-icon>
+                                    <iconify-icon icon="solar:star-bold" style="font-size:14px;color:#c8a96e"></iconify-icon>
+                                    <iconify-icon icon="solar:star-bold" style="font-size:14px;color:#c8a96e"></iconify-icon>
+                                    <iconify-icon icon="solar:star-bold" style="font-size:14px;color:#c8a96e"></iconify-icon>
+                                    <span class="text-gold text-sm font-bold ml-1">4.9</span>
+                                </div>
+                                <p class="text-slate-500 text-sm">국내 350+ 기업 임원진이 사용 중</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Floating Card -->
+                    <div class="relative reveal reveal-delay-2 animate-float">
+                        <div class="bezel-card p-6">
+                            <div class="flex items-center justify-between mb-5">
+                                <div>
+                                    <div class="text-xs font-semibold text-slate-500 mb-0.5 uppercase tracking-widest">AEGIS 회의실</div>
+                                    <div class="text-white font-bold">2026 Q2 전략 기획 회의</div>
+                                </div>
+                                <div class="flex items-center gap-2 px-3 py-1.5 rounded-full"
+                                     style="background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25)">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                                    <span class="text-emerald-400 text-xs font-bold">LIVE</span>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3 mb-5">
+                                <div class="rounded-xl p-3 flex items-center gap-3" style="background:rgba(79,143,255,0.08);border:1px solid rgba(79,143,255,0.15)">
+                                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0" style="background:linear-gradient(135deg,#4f8fff,#a78bfa)">김</div>
+                                    <div><div class="text-white text-sm font-semibold">김태영</div><div class="text-slate-500 text-xs">CEO</div></div>
+                                    <iconify-icon icon="solar:microphone-bold" style="font-size:16px;color:#4f8fff;margin-left:auto"></iconify-icon>
+                                </div>
+                                <div class="p-3 flex items-center gap-3" style="background:rgba(200,169,110,0.08);border:1px solid rgba(200,169,110,0.15);border-radius:12px">
+                                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0" style="background:linear-gradient(135deg,#c8a96e,#e0c98a)">이</div>
+                                    <div><div class="text-white text-sm font-semibold">이수빈</div><div class="text-slate-500 text-xs">CFO</div></div>
+                                </div>
+                                <div class="p-3 flex items-center gap-3" style="background:rgba(167,139,250,0.08);border:1px solid rgba(167,139,250,0.15);border-radius:12px">
+                                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0" style="background:linear-gradient(135deg,#a78bfa,#4f8fff)">박</div>
+                                    <div><div class="text-white text-sm font-semibold">박민준</div><div class="text-slate-500 text-xs">COO</div></div>
+                                </div>
+                                <div class="p-3 flex items-center gap-3" style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.15);border-radius:12px">
+                                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0" style="background:linear-gradient(135deg,#10b981,#4f8fff)">최</div>
+                                    <div><div class="text-white text-sm font-semibold">최지원</div><div class="text-slate-500 text-xs">CTO</div></div>
+                                </div>
+                            </div>
+                            <div class="rounded-xl p-4 mb-4" style="background:linear-gradient(135deg,rgba(79,143,255,0.1),rgba(167,139,250,0.08));border:1px solid rgba(79,143,255,0.2)">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="solar:cpu-bolt-bold" style="font-size:16px;color:#4f8fff"></iconify-icon>
+                                    <span class="text-electric text-xs font-bold uppercase tracking-wider">AI 실시간 인사이트</span>
+                                </div>
+                                <p class="text-slate-300 text-sm leading-relaxed">"Q2 마케팅 예산 15% 증액 시, 예상 ROI는 <span class="text-gold font-bold">237%</span> 입니다."</p>
+                            </div>
+                            <div class="flex items-center justify-between text-xs text-slate-500 mb-1.5">
+                                <span>회의 진행률</span><span class="text-gold font-semibold">68%</span>
+                            </div>
+                            <div class="h-1.5 rounded-full" style="background:rgba(255,255,255,0.08)">
+                                <div class="h-1.5 rounded-full" style="width:68%;background:linear-gradient(90deg,#c8a96e,#4f8fff)"></div>
+                            </div>
+                        </div>
+                        <div class="absolute -top-6 -right-6 bezel-card px-4 py-3 hidden lg:flex items-center gap-2.5">
+                            <iconify-icon icon="solar:graph-up-bold" style="font-size:22px;color:#10b981"></iconify-icon>
+                            <div><div class="text-white text-sm font-bold">+32%</div><div class="text-slate-500 text-xs">의사결정 속도</div></div>
+                        </div>
+                        <div class="absolute -bottom-6 -left-6 bezel-card px-4 py-3 hidden lg:flex items-center gap-2.5">
+                            <iconify-icon icon="solar:shield-check-bold" style="font-size:22px;color:#c8a96e"></iconify-icon>
+                            <div><div class="text-white text-sm font-bold">엔터프라이즈급</div><div class="text-slate-500 text-xs">보안 인증 완료</div></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -195,6 +458,85 @@
                     <div class="w-8 h-8 rounded-full flex items-center justify-center bg-teal-900/40 text-teal-400 border border-teal-800 text-sm">🗂️</div><span class="font-semibold text-sm text-gray-200">운영총괄</span>
                 </div>
             </div>
+
+            <p class="mt-12 text-xs text-gray-500 max-w-xl mx-auto leading-relaxed">
+                * 앱 기본값으로 설정되어 있는 임원진의 이름·역할·페르소나는 사용자의 이해를 돕기 위한 가상의 인물이며, 실존 인물 및 단체와는 무관합니다.
+            </p>
+
+            <!-- 회의체 구성 예시 -->
+            <div class="mt-20 max-w-4xl mx-auto">
+                <p class="text-gray-300 text-base leading-relaxed mb-10">
+                    참석자의 인원에 따라, 또는 역할과 페르소나의 설정에 따라<br class="hidden md:block"/>
+                    <strong class="text-white">다양한 회의체를 자유롭게 구성할 수 있습니다.</strong>
+                </p>
+
+                <div class="grid md:grid-cols-2 gap-6 text-left">
+
+                    <!-- 참석자 구성에 따라 -->
+                    <div class="glass-panel rounded-2xl p-6">
+                        <div class="flex items-center gap-2 mb-5">
+                            <div class="w-7 h-7 rounded-lg bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-xs">👥</div>
+                            <h4 class="text-sm font-bold text-indigo-400 uppercase tracking-widest">참석자 구성에 따라</h4>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="bg-gray-800/40 rounded-xl p-4 border border-gray-700/50">
+                                <div class="text-white font-semibold text-sm mb-2">🏢 운영진 회의체</div>
+                                <div class="flex flex-wrap gap-1.5">
+                                    <span class="px-2 py-0.5 rounded-full text-xs bg-rose-900/40 text-rose-400 border border-rose-800/50">수석비서</span>
+                                    <span class="px-2 py-0.5 rounded-full text-xs bg-orange-900/40 text-orange-400 border border-orange-800/50">전략총괄</span>
+                                    <span class="px-2 py-0.5 rounded-full text-xs bg-yellow-900/40 text-yellow-400 border border-yellow-800/50">재무총괄</span>
+                                    <span class="px-2 py-0.5 rounded-full text-xs bg-red-900/40 text-red-400 border border-red-800/50">법무총괄</span>
+                                    <span class="px-2 py-0.5 rounded-full text-xs bg-green-900/40 text-green-400 border border-green-800/50">마케팅총괄</span>
+                                    <span class="px-2 py-0.5 rounded-full text-xs bg-teal-900/40 text-teal-400 border border-teal-800/50">운영총괄</span>
+                                </div>
+                            </div>
+                            <div class="bg-gray-800/40 rounded-xl p-4 border border-gray-700/50">
+                                <div class="text-white font-semibold text-sm mb-2">📣 학원 홍보 방안 회의</div>
+                                <div class="flex flex-wrap gap-1.5">
+                                    <span class="px-2 py-0.5 rounded-full text-xs bg-rose-900/40 text-rose-400 border border-rose-800/50">수석비서</span>
+                                    <span class="px-2 py-0.5 rounded-full text-xs bg-orange-900/40 text-orange-400 border border-orange-800/50">전략총괄</span>
+                                    <span class="px-2 py-0.5 rounded-full text-xs bg-green-900/40 text-green-400 border border-green-800/50">마케팅총괄</span>
+                                    <span class="px-2 py-0.5 rounded-full text-xs bg-purple-900/40 text-purple-400 border border-purple-800/50">디자인총괄</span>
+                                    <span class="px-2 py-0.5 rounded-full text-xs bg-cyan-900/40 text-cyan-400 border border-cyan-800/50">교육총괄</span>
+                                    <span class="px-2 py-0.5 rounded-full text-xs bg-teal-900/40 text-teal-400 border border-teal-800/50">운영총괄</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 역할/페르소나 설정에 따라 -->
+                    <div class="glass-panel rounded-2xl p-6">
+                        <div class="flex items-center gap-2 mb-5">
+                            <div class="w-7 h-7 rounded-lg bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-xs">🎭</div>
+                            <h4 class="text-sm font-bold text-purple-400 uppercase tracking-widest">역할·페르소나 설정에 따라</h4>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="bg-gray-800/40 rounded-xl p-4 border border-gray-700/50 flex items-start gap-3">
+                                <span class="text-xl mt-0.5">💻</span>
+                                <div>
+                                    <div class="text-white font-semibold text-sm">앱 개발 기술문서 구성회의</div>
+                                    <div class="text-gray-500 text-xs mt-1">기획자 · 백엔드 개발자 · 프론트 개발자 · QA · 문서 담당</div>
+                                </div>
+                            </div>
+                            <div class="bg-gray-800/40 rounded-xl p-4 border border-gray-700/50 flex items-start gap-3">
+                                <span class="text-xl mt-0.5">🌐</span>
+                                <div>
+                                    <div class="text-white font-semibold text-sm">홈페이지 개발 회의</div>
+                                    <div class="text-gray-500 text-xs mt-1">PM · UI/UX 디자이너 · 퍼블리셔 · SEO 전문가 · 카피라이터</div>
+                                </div>
+                            </div>
+                            <div class="bg-gray-800/40 rounded-xl p-4 border border-gray-700/50 flex items-start gap-3">
+                                <span class="text-xl mt-0.5">💡</span>
+                                <div>
+                                    <div class="text-white font-semibold text-sm">업무 브레인스토밍 세션</div>
+                                    <div class="text-gray-500 text-xs mt-1">역할 제한 없이 주제에 맞는 전문가 페르소나를 자유롭게 구성</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
         </section>
 
         <!-- FAQ Section -->
@@ -226,6 +568,16 @@
                             신사업, 대규모 투자 등 중대한 판단을 앞둔 C레벨 및 대표이사는 물론, 조언을 구할 곳 없이 모든 의사결정을 홀로 감당해야 하는 자영업자 및 소상공인 분들에게도 리스크를 사전에 방어해 주는 든든한 필수 파트너가 됩니다.
                         </p>
                     </div>
+                    <div class="bg-gray-800/30 border border-gray-700/50 rounded-2xl p-6 hover:bg-gray-800/50 transition-colors">
+                        <h3 class="text-lg font-bold text-white mb-3 flex items-start gap-4">
+                            <span class="text-indigo-400 font-black">Q.</span>AI API 키는 어떻게 발급받나요?
+                        </h3>
+                        <p class="text-gray-400 leading-relaxed pl-8">
+                            처음 설정이 걱정되신다면 걱정 마세요.
+                            <button onclick="openGuide()" class="text-yellow-400 font-semibold hover:underline cursor-pointer">시작 가이드</button>에서
+                            Gemini API 키 발급부터 앱 연결까지 단계별로 안내해 드립니다. 5분이면 완료됩니다.
+                        </p>
+                    </div>
                 </div>
             </div>
         </section>
@@ -236,9 +588,18 @@
             <div class="relative z-10 max-w-3xl mx-auto">
                 <h2 class="text-4xl lg:text-5xl font-bold mb-6">의사결정의 리스크를 없앨 준비가 되셨습니까?</h2>
                 <p class="text-lg text-gray-400 mb-10">지금 바로 Aegis에 합류하여 데이터에 기반한 초격차 경영을 시작하세요.</p>
-                <button class="px-10 py-5 bg-white text-gray-950 rounded-2xl font-bold text-lg shadow-2xl shadow-white/10 transition-transform hover:scale-105 active:scale-95" onclick="window.location.href='https://aegis.dctcompany.kr'">
-                    내 경영 리스크 진단 시작하기
-                </button>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <a href="https://dctcompany.kr/downloads/AEGIS-Setup-1.0.0.exe"
+                       class="btn-primary inline-flex items-center gap-3 px-10 py-5 text-lg font-bold relative z-10">
+                        <iconify-icon icon="solar:download-bold" style="font-size:24px"></iconify-icon>
+                        Windows 다운로드 (v1.0.0)
+                    </a>
+                    <button onclick="openGuide()"
+                       class="btn-guide inline-flex items-center gap-3 px-10 py-5 text-lg cursor-pointer">
+                        <iconify-icon icon="solar:book-2-bold" style="font-size:24px"></iconify-icon>
+                        API 설정 가이드
+                    </button>
+                </div>
             </div>
         </section>
 
@@ -248,6 +609,14 @@
         </footer>
     </div>
 
+    <!-- Scroll Reveal -->
+    <script>
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+    </script>
+
     <!-- Counters UI Animation Script -->
     <script>
         document.addEventListener("DOMContentLoaded", () => {
@@ -255,20 +624,166 @@
             const target = 85;
             const counter = document.getElementById('risk-counter');
             const bar = document.getElementById('risk-bar');
-            
-            // Trigger animation on scroll intersect or simple timeout
             setTimeout(() => {
                 const interval = setInterval(() => {
-                    if (val < target) {
-                        val++;
-                        counter.innerText = val;
-                        bar.style.width = val + '%';
-                    } else {
-                        clearInterval(interval);
-                    }
+                    if (val < target) { val++; counter.innerText = val; bar.style.width = val + '%'; }
+                    else { clearInterval(interval); }
                 }, 20);
             }, 500);
         });
+    </script>
+
+    <!-- API 가이드 모달 -->
+    <div class="guide-overlay" id="guideModal" onclick="handleGuideOverlay(event)">
+        <div class="guide-box" id="guideBox">
+            <div class="sticky top-0 z-10 px-8 pt-8 pb-5" style="background:linear-gradient(160deg,#111827,#0a0f1e);border-bottom:1px solid rgba(255,255,255,0.06)">
+                <div class="flex items-start justify-between gap-4">
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center text-sm font-bold">A</div>
+                            <span class="text-sm font-bold text-gray-400">AEGIS 시작 가이드</span>
+                        </div>
+                        <h2 class="text-2xl font-black text-white">AI API 키 설정 방법</h2>
+                        <p class="text-gray-500 text-sm mt-1">처음이라도 관닮습니다. 5분이면 완료됩니다 ✨</p>
+                    </div>
+                    <button onclick="closeGuide()" class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-1 cursor-pointer" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1)">
+                        <iconify-icon icon="solar:close-bold" style="font-size:18px;color:#94a3b8"></iconify-icon>
+                    </button>
+                </div>
+                <div class="flex gap-1 mt-5 p-1 rounded-xl" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07)">
+                    <button class="api-tab active flex-1" id="tab-gemini" onclick="switchApiTab('gemini')">🔷 Google Gemini <span class="text-xs opacity-70 ml-1">(추천)</span></button>
+                    <button class="api-tab flex-1" id="tab-openai" onclick="switchApiTab('openai')">🟢 OpenAI</button>
+                    <button class="api-tab flex-1" id="tab-claude" onclick="switchApiTab('claude')">🟠 Claude</button>
+                </div>
+            </div>
+            <div class="px-8 py-6">
+                <!-- Gemini -->
+                <div id="content-gemini">
+                    <div class="tip-box mb-6 flex items-start gap-3">
+                        <iconify-icon icon="solar:star-bold" style="font-size:18px;color:#4f8fff;flex-shrink:0;margin-top:2px"></iconify-icon>
+                        <div>
+                            <div class="text-blue-400 text-sm font-bold mb-1">Gemini를 추천하는 이유</div>
+                            <p class="text-gray-400 text-sm leading-relaxed">Google AI Studio에서 <strong class="text-white">무료로 API 키를 발급</strong>받을 수 있습니다. 별도의 결제 정보 없이 바로 시작 가능합니다.</p>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="step-card"><div class="flex items-start gap-4"><div class="step-num">1</div><div class="flex-1">
+                            <h3 class="text-white font-bold mb-1">Google AI Studio 접속</h3>
+                            <p class="text-gray-400 text-sm leading-relaxed mb-3">아래 링크를 클릭해서 Google AI Studio에 접속합니다. 구글 계정으로 로그인하세요.</p>
+                            <a href="https://aistudio.google.com" target="_blank" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold hover:opacity-80" style="background:rgba(66,133,244,0.15);border:1px solid rgba(66,133,244,0.35);color:#4f8fff">
+                                <iconify-icon icon="solar:global-bold" style="font-size:16px"></iconify-icon> aistudio.google.com 바로가기 <iconify-icon icon="solar:arrow-right-up-bold" style="font-size:14px"></iconify-icon>
+                            </a>
+                        </div></div></div>
+                        <div class="step-card"><div class="flex items-start gap-4"><div class="step-num">2</div><div class="flex-1">
+                            <h3 class="text-white font-bold mb-1">API 키 만들기</h3>
+                            <p class="text-gray-400 text-sm leading-relaxed mb-3">로그인 후 왼쪽 메뉴에서 <strong class="text-white">『Get API key』</strong> 버튼을 클릭합니다.</p>
+                            <div class="bg-gray-900/60 rounded-xl p-4 border border-gray-700/50 mb-3">
+                                <div class="flex items-center gap-2 mb-2"><div class="w-2 h-2 rounded-full bg-red-400"></div><div class="w-2 h-2 rounded-full bg-yellow-400"></div><div class="w-2 h-2 rounded-full bg-green-400"></div><span class="text-gray-600 text-xs ml-1">Google AI Studio</span></div>
+                                <div class="space-y-1.5 text-xs">
+                                    <div class="flex items-center gap-2 p-2 rounded-lg bg-gray-800/60 text-gray-400"><iconify-icon icon="solar:home-bold" style="font-size:14px"></iconify-icon> Home</div>
+                                    <div class="flex items-center gap-2 p-2 rounded-lg bg-gray-800/60 text-gray-400"><iconify-icon icon="solar:chat-round-bold" style="font-size:14px"></iconify-icon> My Library</div>
+                                    <div class="flex items-center gap-2 p-2 rounded-xl font-bold" style="background:rgba(66,133,244,0.2);border:1px solid rgba(66,133,244,0.4);color:#4f8fff"><iconify-icon icon="solar:key-bold" style="font-size:14px"></iconify-icon> <span>Get API key</span><span class="ml-auto text-xs">← 여기!</span></div>
+                                </div>
+                            </div>
+                            <p class="text-gray-400 text-sm">그 다음 <strong class="text-white">『Create API key』</strong> 버튼을 클릭하면 키가 생성됩니다.</p>
+                        </div></div></div>
+                        <div class="step-card"><div class="flex items-start gap-4"><div class="step-num">3</div><div class="flex-1">
+                            <h3 class="text-white font-bold mb-1">API 키 복사</h3>
+                            <p class="text-gray-400 text-sm leading-relaxed mb-3">생성된 API 키가 화면에 표시됩니다. 아래와 같이 생긴 긴 문자열입니다.</p>
+                            <div class="code-block mb-3">AIzaSy<span class="text-gray-500">XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</span></div>
+                            <div class="warning-box flex items-start gap-2.5">
+                                <iconify-icon icon="solar:danger-triangle-bold" style="font-size:16px;color:#f59e0b;flex-shrink:0;margin-top:1px"></iconify-icon>
+                                <p class="text-yellow-200/80 text-xs leading-relaxed">API 키는 비밀번호와 같습니다. 다른 사람에게 공유하거나 인터넷에 올리지 마세요.</p>
+                            </div>
+                        </div></div></div>
+                        <div class="step-card" style="border-color:rgba(200,169,110,0.2)"><div class="flex items-start gap-4"><div class="step-num">4</div><div class="flex-1">
+                            <h3 class="text-white font-bold mb-1">AEGIS 앱에 입력</h3>
+                            <p class="text-gray-400 text-sm leading-relaxed mb-4">앱을 실행하고 아래 순서로 진행하세요.</p>
+                            <div class="space-y-2 mb-4">
+                                <div class="flex items-center gap-3 p-3 rounded-xl" style="background:rgba(200,169,110,0.06);border:1px solid rgba(200,169,110,0.15)"><span class="w-6 h-6 rounded-full text-yellow-400 text-xs font-bold flex items-center justify-center flex-shrink-0" style="background:rgba(200,169,110,0.15)">①</span><span class="text-gray-300 text-sm">앱 상단 오른쪽 <strong class="text-white">⚙️ 설정</strong> 아이콘 클릭</span></div>
+                                <div class="flex items-center gap-3 p-3 rounded-xl" style="background:rgba(200,169,110,0.06);border:1px solid rgba(200,169,110,0.15)"><span class="w-6 h-6 rounded-full text-yellow-400 text-xs font-bold flex items-center justify-center flex-shrink-0" style="background:rgba(200,169,110,0.15)">②</span><span class="text-gray-300 text-sm"><strong class="text-white">『AI 설정』</strong> 또는 <strong class="text-white">『API 키』</strong> 탭 선택</span></div>
+                                <div class="flex items-center gap-3 p-3 rounded-xl" style="background:rgba(200,169,110,0.06);border:1px solid rgba(200,169,110,0.15)"><span class="w-6 h-6 rounded-full text-yellow-400 text-xs font-bold flex items-center justify-center flex-shrink-0" style="background:rgba(200,169,110,0.15)">③</span><span class="text-gray-300 text-sm">AI 제공사로 <strong class="text-white">『Google Gemini』</strong> 선택</span></div>
+                                <div class="flex items-center gap-3 p-3 rounded-xl" style="background:rgba(200,169,110,0.06);border:1px solid rgba(200,169,110,0.15)"><span class="w-6 h-6 rounded-full text-yellow-400 text-xs font-bold flex items-center justify-center flex-shrink-0" style="background:rgba(200,169,110,0.15)">④</span><span class="text-gray-300 text-sm">복사한 API 키를 입력란에 붙여넣기 후 <strong class="text-white">『저장』</strong></span></div>
+                            </div>
+                            <div class="tip-box flex items-start gap-2.5">
+                                <iconify-icon icon="solar:check-circle-bold" style="font-size:16px;color:#10b981;flex-shrink:0;margin-top:1px"></iconify-icon>
+                                <p class="text-emerald-300/80 text-xs leading-relaxed">저장 후 <strong class="text-white">『연결 테스트』</strong> 버튼을 누르면 정상 작동 여부를 바로 확인할 수 있습니다.</p>
+                            </div>
+                        </div></div></div>
+                    </div>
+                    <div class="mt-6 text-center p-6 rounded-2xl" style="background:linear-gradient(135deg,rgba(16,185,129,0.08),rgba(79,143,255,0.05));border:1px solid rgba(16,185,129,0.2)">
+                        <div class="text-3xl mb-2">🎉</div>
+                        <h3 class="text-white font-bold mb-1">이제 AEGIS를 사용할 준비가 끝났습니다!</h3>
+                        <a href="https://dctcompany.kr/downloads/AEGIS-Setup-1.0.0.exe" class="btn-primary inline-flex items-center gap-2 px-6 py-3 text-sm font-bold mt-4 relative z-10">
+                            <iconify-icon icon="solar:download-bold" style="font-size:16px"></iconify-icon> 앱 다운로드
+                        </a>
+                    </div>
+                </div>
+                <!-- OpenAI -->
+                <div id="content-openai" class="hidden">
+                    <div class="warning-box mb-6 flex items-start gap-3">
+                        <iconify-icon icon="solar:info-circle-bold" style="font-size:18px;color:#f59e0b;flex-shrink:0;margin-top:2px"></iconify-icon>
+                        <div><div class="text-yellow-400 text-sm font-bold mb-1">유료 API입니다</div><p class="text-gray-400 text-sm">OpenAI API는 사용량에 따라 요금이 부과됩니다. 신용카드 등록이 필요합니다.</p></div>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="step-card"><div class="flex items-start gap-4"><div class="step-num">1</div><div class="flex-1">
+                            <h3 class="text-white font-bold mb-1">OpenAI Platform 접속</h3>
+                            <a href="https://platform.openai.com" target="_blank" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold hover:opacity-80 mt-2" style="background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);color:#10b981">
+                                <iconify-icon icon="solar:global-bold" style="font-size:16px"></iconify-icon> platform.openai.com 바로가기 <iconify-icon icon="solar:arrow-right-up-bold" style="font-size:14px"></iconify-icon>
+                            </a>
+                        </div></div></div>
+                        <div class="step-card"><div class="flex items-start gap-4"><div class="step-num">2</div><div class="flex-1">
+                            <h3 class="text-white font-bold mb-1">API Keys 생성</h3>
+                            <p class="text-gray-400 text-sm mb-2">오른쪽 상단 프로필 → <strong class="text-white">『API keys』</strong> → <strong class="text-white">『Create new secret key』</strong></p>
+                            <div class="code-block">sk-proj-<span class="text-gray-500">XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</span></div>
+                        </div></div></div>
+                        <div class="step-card"><div class="flex items-start gap-4"><div class="step-num">3</div><div class="flex-1">
+                            <h3 class="text-white font-bold mb-1">AEGIS 앱에 입력</h3>
+                            <p class="text-gray-400 text-sm">설정 → AI 설정 → <strong class="text-white">『OpenAI』</strong> 선택 후 키를 붙여넣고 저장하세요.</p>
+                        </div></div></div>
+                    </div>
+                </div>
+                <!-- Claude -->
+                <div id="content-claude" class="hidden">
+                    <div class="warning-box mb-6 flex items-start gap-3">
+                        <iconify-icon icon="solar:info-circle-bold" style="font-size:18px;color:#f59e0b;flex-shrink:0;margin-top:2px"></iconify-icon>
+                        <div><div class="text-yellow-400 text-sm font-bold mb-1">유료 API입니다</div><p class="text-gray-400 text-sm">Anthropic Claude API는 사용량에 따라 요금이 부과됩니다. 신용카드 등록이 필요합니다.</p></div>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="step-card"><div class="flex items-start gap-4"><div class="step-num">1</div><div class="flex-1">
+                            <h3 class="text-white font-bold mb-1">Anthropic Console 접속</h3>
+                            <a href="https://console.anthropic.com" target="_blank" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold hover:opacity-80 mt-2" style="background:rgba(251,146,60,0.12);border:1px solid rgba(251,146,60,0.3);color:#fb923c">
+                                <iconify-icon icon="solar:global-bold" style="font-size:16px"></iconify-icon> console.anthropic.com 바로가기 <iconify-icon icon="solar:arrow-right-up-bold" style="font-size:14px"></iconify-icon>
+                            </a>
+                        </div></div></div>
+                        <div class="step-card"><div class="flex items-start gap-4"><div class="step-num">2</div><div class="flex-1">
+                            <h3 class="text-white font-bold mb-1">API Keys 발급</h3>
+                            <p class="text-gray-400 text-sm mb-2">왼쪽 메뉴 <strong class="text-white">『API Keys』</strong> → <strong class="text-white">『Create Key』</strong></p>
+                            <div class="code-block">sk-ant-api03-<span class="text-gray-500">XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</span></div>
+                        </div></div></div>
+                        <div class="step-card"><div class="flex items-start gap-4"><div class="step-num">3</div><div class="flex-1">
+                            <h3 class="text-white font-bold mb-1">AEGIS 앱에 입력</h3>
+                            <p class="text-gray-400 text-sm">설정 → AI 설정 → <strong class="text-white">『Claude (Anthropic)』</strong> 선택 후 키를 붙여넣고 저장하세요.</p>
+                        </div></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Guide Modal Script -->
+    <script>
+        function openGuide() { document.getElementById('guideModal').classList.add('open'); document.body.style.overflow = 'hidden'; }
+        function closeGuide() { document.getElementById('guideModal').classList.remove('open'); document.body.style.overflow = ''; }
+        function handleGuideOverlay(e) { if (e.target === document.getElementById('guideModal')) closeGuide(); }
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeGuide(); });
+        function switchApiTab(tab) {
+            ['gemini','openai','claude'].forEach(t => {
+                document.getElementById('tab-' + t).classList.toggle('active', t === tab);
+                document.getElementById('content-' + t).classList.toggle('hidden', t !== tab);
+            });
+            document.getElementById('guideBox').scrollTop = 0;
+        }
     </script>
 </body>
 </html>

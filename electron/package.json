@@ -68,8 +68,8 @@
     },
     "publish": {
       "provider": "github",
-      "owner": "YOUR_GITHUB_USERNAME",
-      "repo": "aegis-desktop"
+      "owner": "khai2821195",
+      "repo": "Aegis"
     }
   }
 }

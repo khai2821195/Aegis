@@ -1,0 +1,105 @@
+{
+  "name": "AEGIS Pro 무료 체험 자동화",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": { "item": [{ "mode": "everyMinute" }] },
+        "databaseId": "b208216d-652d-4f89-bf63-7c421b05a4b8",
+        "filters": {
+          "filters": [{ "key": "상태|select", "condition": "equals", "value": "신청완료" }]
+        },
+        "options": {}
+      },
+      "id": "notion-trigger",
+      "name": "노션 신청 감지",
+      "type": "n8n-nodes-base.notionTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rgsucvzwsaynyzrsrlad.supabase.co/functions/v1/activate-pro-trial",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "x-webhook-secret", "value": "aegis-pro-trial-2026" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ username: $json['AEGIS ID'], email: $json['이메일'], name: $json['이름'] }) }}",
+        "options": {}
+      },
+      "id": "supabase-activate",
+      "name": "Supabase Pro 활성화 + 알림",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": false, "typeValidation": "strict" },
+          "conditions": [{ "id": "check-success", "leftValue": "={{ $json.success }}", "rightValue": true, "operator": { "type": "boolean", "operation": "true" } }],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-result",
+      "name": "성공 여부 확인",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [720, 300]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": "={{ $('노션 신청 감지').item.json.id }}",
+        "propertiesUi": {
+          "propertyValues": [
+            { "key": "상태|select", "selectValue": "Pro 적용됨" },
+            { "key": "Pro 시작일|date", "date": "={{ new Date().toISOString().split('T')[0] }}" },
+            { "key": "Pro 만료일|date", "date": "={{ new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0] }}" }
+          ]
+        }
+      },
+      "id": "notion-update-success",
+      "name": "노션 상태 업데이트 (성공)",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [960, 200]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": "={{ $('노션 신청 감지').item.json.id }}",
+        "propertiesUi": {
+          "propertyValues": [
+            { "key": "상태|select", "selectValue": "오류" },
+            { "key": "메모|rich_text", "textContent": "={{ '오류: ' + JSON.stringify($json) }}" }
+          ]
+        }
+      },
+      "id": "notion-update-fail",
+      "name": "노션 상태 업데이트 (오류)",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [960, 420]
+    }
+  ],
+  "connections": {
+    "노션 신청 감지": { "main": [[{ "node": "Supabase Pro 활성화 + 알림", "type": "main", "index": 0 }]] },
+    "Supabase Pro 활성화 + 알림": { "main": [[{ "node": "성공 여부 확인", "type": "main", "index": 0 }]] },
+    "성공 여부 확인": {
+      "main": [
+        [{ "node": "노션 상태 업데이트 (성공)", "type": "main", "index": 0 }],
+        [{ "node": "노션 상태 업데이트 (오류)", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": { "executionOrder": "v1" }
+}
