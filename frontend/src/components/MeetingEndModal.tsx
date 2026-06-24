@@ -125,7 +125,7 @@ ${attendeeList}
     if (!summary) return;
     setSaving(true);
 
-    const { error: dbError } = await supabase.from('meetings').insert({
+    const { error: dbError } = await supabase.from('aegis_meetings').insert({
       user_id: userId,
       title: summary.title,
       summary: summary.content,

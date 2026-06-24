@@ -29,7 +29,7 @@ export default function MeetingHistoryTab({ userId, selectedIds, onSelect }: Pro
   async function fetchMeetings() {
     setLoading(true);
     const { data } = await supabase
-      .from('meetings')
+      .from('aegis_meetings')
       .select('id, title, summary, attendees, message_count, created_at')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
@@ -39,7 +39,7 @@ export default function MeetingHistoryTab({ userId, selectedIds, onSelect }: Pro
 
   async function deleteMeeting(id: string) {
     setDeleting(id);
-    await supabase.from('meetings').delete().eq('id', id);
+    await supabase.from('aegis_meetings').delete().eq('id', id);
     const meeting = meetings.find(m => m.id === id);
     if (meeting && selectedIds.includes(id)) onSelect(meeting); // 토글로 제거
     setMeetings(prev => prev.filter(m => m.id !== id));

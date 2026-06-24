@@ -76,9 +76,16 @@ export function useAuth() {
   }
 
   useEffect(() => {
+    // 타임아웃 보장: 5초 안에 응답 없으면 강제로 loading 해제
+    const timeout = setTimeout(() => setLoading(false), 5000);
+
     supabase.auth.getSession().then(({ data: { session } }) => {
+      clearTimeout(timeout);
       setUser(session?.user ?? null);
       if (session?.user) fetchProfile(session.user);
+      setLoading(false);
+    }).catch(() => {
+      clearTimeout(timeout);
       setLoading(false);
     });
 

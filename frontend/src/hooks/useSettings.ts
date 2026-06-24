@@ -7,7 +7,7 @@ const STORAGE_KEY = 'ai-meeting-settings-v2';
 const defaultSettings = (): Settings => ({
   apiKeys: { gemini: '', anthropic: '', openai: '' },
   personaModels: Object.fromEntries(
-    DEFAULT_PERSONAS.map(p => [p.id, { provider: 'gemini' as Provider, modelId: 'gemini-3.1-flash-lite-preview' }])
+    DEFAULT_PERSONAS.map(p => [p.id, { provider: 'gemini' as Provider, modelId: 'gemini-3.1-flash-lite' }])
   ),
   personas: DEFAULT_PERSONAS,
   attendeeIds: ['cheryl', 'bill'],
@@ -82,7 +82,7 @@ export function useSettings() {
         : [...prev.personas, persona];
       const personaModels = prev.personaModels[persona.id]
         ? prev.personaModels
-        : { ...prev.personaModels, [persona.id]: { provider: 'gemini' as Provider, modelId: 'gemini-3.1-flash-lite-preview' } };
+        : { ...prev.personaModels, [persona.id]: { provider: 'gemini' as Provider, modelId: 'gemini-3.1-flash-lite' } };
       const next = { ...prev, personas, personaModels };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
       return next;
